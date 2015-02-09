@@ -9,6 +9,7 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.bean.WxMpCustomMessage;
 import me.chanjar.weixin.mp.bean.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.WxMpXmlOutMessage;
+import me.chanjar.weixin.mp.bean.WxMpXmlOutTextMessage;
 
 import java.util.Map;
 import java.util.Random;
@@ -46,7 +47,6 @@ public class DemoGuessNumberHandler implements WxMpMessageHandler, WxMpMessageMa
     }
 
     return null;
-
   }
 
   protected void letsGo(WxMpXmlMessage wxMessage, WxMpService wxMpService, WxSessionManager sessionManager) throws WxErrorException {

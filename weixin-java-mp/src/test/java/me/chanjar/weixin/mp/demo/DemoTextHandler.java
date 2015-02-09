@@ -17,7 +17,7 @@ public class DemoTextHandler implements WxMpMessageHandler {
   public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage, Map<String, Object> context,
       WxMpService wxMpService, WxSessionManager sessionManager) {
     WxMpXmlOutTextMessage m
-        = WxMpXmlOutMessage.TEXT().content("测试加密消息").fromUser(wxMessage.getToUserName())
+        = WxMpXmlOutMessage.TEXT().content("游戏正在紧锣密鼓的开发中，敬请期待！").fromUser(wxMessage.getToUserName())
         .toUser(wxMessage.getFromUserName()).build();
     return m;
   }

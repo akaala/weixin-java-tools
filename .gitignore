@@ -19,3 +19,5 @@ target
 sw-pom.xml
 *.iml
 test-config.xml
+
+.idea/*

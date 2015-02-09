@@ -41,7 +41,7 @@ public class WxMpEndpointServlet extends HttpServlet {
 
     if (!wxMpService.checkSignature(timestamp, nonce, signature)) {
       // 消息签名不正确，说明不是公众平台发过来的消息
-      response.getWriter().println("非法请求");
+      response.getWriter().println("=非法请求=");
       return;
     }
 

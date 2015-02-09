@@ -1,353 +1,367 @@
 package me.chanjar.weixin.mp.api;
 
-import me.chanjar.weixin.common.exception.WxErrorException;
-import me.chanjar.weixin.common.session.WxSessionManager;
-import me.chanjar.weixin.common.util.WxErrorExceptionHandler;
-import me.chanjar.weixin.mp.bean.WxMpXmlMessage;
-import me.chanjar.weixin.mp.bean.WxMpXmlOutMessage;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.common.session.WxSessionManager;
+import me.chanjar.weixin.common.util.WxErrorExceptionHandler;
+import me.chanjar.weixin.mp.bean.WxMpXmlMessage;
+import me.chanjar.weixin.mp.bean.WxMpXmlOutMessage;
+
 public class WxMpMessageRouterRule {
 
-  private final WxMpMessageRouter routerBuilder;
+    private final WxMpMessageRouter routerBuilder;
 
-  private boolean async = true;
+    private boolean async = true;
 
-  private String fromUser;
+    private String fromUser;
 
-  private String msgType;
+    private String msgType;
 
-  private String event;
+    private String event;
 
-  private String eventKey;
+    private String eventKey;
 
-  private String content;
+    private String content;
 
-  private String rContent;
+    private String rContent;
 
-  private WxMpMessageMatcher matcher;
+    private WxMpMessageMatcher matcher;
 
-  private boolean reEnter = false;
+    private boolean reEnter = false;
 
-  private List<WxMpMessageHandler> handlers = new ArrayList<WxMpMessageHandler>();
+    private List<WxMpMessageHandler> handlers = new ArrayList<WxMpMessageHandler>();
 
-  private List<WxMpMessageInterceptor> interceptors = new ArrayList<WxMpMessageInterceptor>();
+    private List<WxMpMessageInterceptor> interceptors = new ArrayList<WxMpMessageInterceptor>();
 
-  public WxMpMessageRouterRule(WxMpMessageRouter routerBuilder) {
-    this.routerBuilder = routerBuilder;
-  }
-
-  /**
-   * 设置是否异步执行，默认是true
-   *
-   * @param async
-   * @return
-   */
-  public WxMpMessageRouterRule async(boolean async) {
-    this.async = async;
-    return this;
-  }
-
-  /**
-   * 如果msgType等于某值
-   *
-   * @param msgType
-   * @return
-   */
-  public WxMpMessageRouterRule msgType(String msgType) {
-    this.msgType = msgType;
-    return this;
-  }
-
-  /**
-   * 如果event等于某值
-   *
-   * @param event
-   * @return
-   */
-  public WxMpMessageRouterRule event(String event) {
-    this.event = event;
-    return this;
-  }
-
-  /**
-   * 如果eventKey等于某值
-   *
-   * @param eventKey
-   * @return
-   */
-  public WxMpMessageRouterRule eventKey(String eventKey) {
-    this.eventKey = eventKey;
-    return this;
-  }
-
-  /**
-   * 如果content等于某值
-   *
-   * @param content
-   * @return
-   */
-  public WxMpMessageRouterRule content(String content) {
-    this.content = content;
-    return this;
-  }
-
-  /**
-   * 如果content匹配该正则表达式
-   *
-   * @param regex
-   * @return
-   */
-  public WxMpMessageRouterRule rContent(String regex) {
-    this.rContent = regex;
-    return this;
-  }
-
-  /**
-   * 如果fromUser等于某值
-   *
-   * @param fromUser
-   * @return
-   */
-  public WxMpMessageRouterRule fromUser(String fromUser) {
-    this.fromUser = fromUser;
-    return this;
-  }
-
-  /**
-   * 如果消息匹配某个matcher，用在用户需要自定义更复杂的匹配规则的时候
-   *
-   * @param matcher
-   * @return
-   */
-  public WxMpMessageRouterRule matcher(WxMpMessageMatcher matcher) {
-    this.matcher = matcher;
-    return this;
-  }
-
-  /**
-   * 设置微信消息拦截器
-   *
-   * @param interceptor
-   * @return
-   */
-  public WxMpMessageRouterRule interceptor(WxMpMessageInterceptor interceptor) {
-    return interceptor(interceptor, (WxMpMessageInterceptor[]) null);
-  }
-
-  /**
-   * 设置微信消息拦截器
-   *
-   * @param interceptor
-   * @param otherInterceptors
-   * @return
-   */
-  public WxMpMessageRouterRule interceptor(WxMpMessageInterceptor interceptor, WxMpMessageInterceptor... otherInterceptors) {
-    this.interceptors.add(interceptor);
-    if (otherInterceptors != null && otherInterceptors.length > 0) {
-      for (WxMpMessageInterceptor i : otherInterceptors) {
-        this.interceptors.add(i);
-      }
+    public WxMpMessageRouterRule(WxMpMessageRouter routerBuilder) {
+        this.routerBuilder = routerBuilder;
     }
-    return this;
-  }
 
-  /**
-   * 设置微信消息处理器
-   *
-   * @param handler
-   * @return
-   */
-  public WxMpMessageRouterRule handler(WxMpMessageHandler handler) {
-    return handler(handler, (WxMpMessageHandler[]) null);
-  }
-
-  /**
-   * 设置微信消息处理器
-   *
-   * @param handler
-   * @param otherHandlers
-   * @return
-   */
-  public WxMpMessageRouterRule handler(WxMpMessageHandler handler, WxMpMessageHandler... otherHandlers) {
-    this.handlers.add(handler);
-    if (otherHandlers != null && otherHandlers.length > 0) {
-      for (WxMpMessageHandler i : otherHandlers) {
-        this.handlers.add(i);
-      }
+    /**
+     * 设置是否异步执行，默认是true
+     *
+     * @param async
+     * @return
+     */
+    public WxMpMessageRouterRule async(boolean async) {
+        this.async = async;
+        return this;
     }
-    return this;
-  }
 
-  /**
-   * 规则结束，代表如果一个消息匹配该规则，那么它将不再会进入其他规则
-   *
-   * @return
-   */
-  public WxMpMessageRouter end() {
-    this.routerBuilder.getRules().add(this);
-    return this.routerBuilder;
-  }
+    /**
+     * 如果msgType等于某值
+     *
+     * @param msgType
+     * @return
+     */
+    public WxMpMessageRouterRule msgType(String msgType) {
+        this.msgType = msgType;
+        return this;
+    }
 
-  /**
-   * 规则结束，但是消息还会进入其他规则
-   *
-   * @return
-   */
-  public WxMpMessageRouter next() {
-    this.reEnter = true;
-    return end();
-  }
+    /**
+     * 如果event等于某值
+     *
+     * @param event
+     * @return
+     */
+    public WxMpMessageRouterRule event(String event) {
+        this.event = event;
+        return this;
+    }
 
-  protected boolean test(WxMpXmlMessage wxMessage) {
-    return
-        (this.fromUser == null || this.fromUser.equals(wxMessage.getFromUserName()))
-            &&
-            (this.msgType == null || this.msgType.equals(wxMessage.getMsgType()))
-            &&
-            (this.event == null || this.event.equals(wxMessage.getEvent()))
-            &&
-            (this.eventKey == null || this.eventKey.equals(wxMessage.getEventKey()))
-            &&
-            (this.content == null || this.content
-                .equals(wxMessage.getContent() == null ? null : wxMessage.getContent().trim()))
-            &&
-            (this.rContent == null || Pattern
-                .matches(this.rContent, wxMessage.getContent() == null ? "" : wxMessage.getContent().trim()))
-            &&
-            (this.matcher == null || this.matcher.match(wxMessage))
-        ;
-  }
+    /**
+     * 如果eventKey等于某值
+     *
+     * @param eventKey
+     * @return
+     */
+    public WxMpMessageRouterRule eventKey(String eventKey) {
+        this.eventKey = eventKey;
+        return this;
+    }
 
-  /**
-   * 处理微信推送过来的消息
-   *
-   * @param wxMessage
-   * @return true 代表继续执行别的router，false 代表停止执行别的router
-   */
-  protected WxMpXmlOutMessage service(WxMpXmlMessage wxMessage,
-      WxMpService wxMpService,
-      WxSessionManager sessionManager,
-      WxErrorExceptionHandler exceptionHandler) {
+    /**
+     * 如果content等于某值
+     *
+     * @param content
+     * @return
+     */
+    public WxMpMessageRouterRule content(String content) {
+        this.content = content;
+        return this;
+    }
 
-    try {
+    /**
+     * 如果content匹配该正则表达式
+     *
+     * @param regex
+     * @return
+     */
+    public WxMpMessageRouterRule rContent(String regex) {
+        this.rContent = regex;
+        return this;
+    }
 
-      Map<String, Object> context = new HashMap<String, Object>();
-      // 如果拦截器不通过
-      for (WxMpMessageInterceptor interceptor : this.interceptors) {
-        if (!interceptor.intercept(wxMessage, context, wxMpService, sessionManager)) {
-          return null;
+    /**
+     * 如果fromUser等于某值
+     *
+     * @param fromUser
+     * @return
+     */
+    public WxMpMessageRouterRule fromUser(String fromUser) {
+        this.fromUser = fromUser;
+        return this;
+    }
+
+    /**
+     * 如果消息匹配某个matcher，用在用户需要自定义更复杂的匹配规则的时候
+     *
+     * @param matcher
+     * @return
+     */
+    public WxMpMessageRouterRule matcher(WxMpMessageMatcher matcher) {
+        this.matcher = matcher;
+        return this;
+    }
+
+    /**
+     * 设置微信消息拦截器
+     *
+     * @param interceptor
+     * @return
+     */
+    public WxMpMessageRouterRule interceptor(WxMpMessageInterceptor interceptor) {
+        return interceptor(interceptor, (WxMpMessageInterceptor[]) null);
+    }
+
+    /**
+     * 设置微信消息拦截器
+     *
+     * @param interceptor
+     * @param otherInterceptors
+     * @return
+     */
+    public WxMpMessageRouterRule interceptor(WxMpMessageInterceptor interceptor, WxMpMessageInterceptor... otherInterceptors) {
+        this.interceptors.add(interceptor);
+        if (otherInterceptors != null && otherInterceptors.length > 0) {
+            for (WxMpMessageInterceptor i : otherInterceptors) {
+                this.interceptors.add(i);
+            }
         }
-      }
-
-      // 交给handler处理
-      WxMpXmlOutMessage res = null;
-      for (WxMpMessageHandler handler : this.handlers) {
-        // 返回最后handler的结果
-        res = handler.handle(wxMessage, context, wxMpService, sessionManager);
-      }
-      return res;
-    } catch (WxErrorException e) {
-      exceptionHandler.handle(e);
+        return this;
     }
-    return null;
 
-  }
+    /**
+     * 设置微信消息处理器
+     *
+     * @param handler
+     * @return
+     */
+    public WxMpMessageRouterRule handler(WxMpMessageHandler handler) {
+        return handler(handler, (WxMpMessageHandler[]) null);
+    }
 
-  public WxMpMessageRouter getRouterBuilder() {
-    return routerBuilder;
-  }
+    /**
+     * 设置微信消息处理器
+     *
+     * @param handler
+     * @param otherHandlers
+     * @return
+     */
+    public WxMpMessageRouterRule handler(WxMpMessageHandler handler, WxMpMessageHandler... otherHandlers) {
+        this.handlers.add(handler);
+        if (otherHandlers != null && otherHandlers.length > 0) {
+            for (WxMpMessageHandler i : otherHandlers) {
+                this.handlers.add(i);
+            }
+        }
+        return this;
+    }
 
-  public boolean isAsync() {
-    return async;
-  }
+    /**
+     * 规则结束，代表如果一个消息匹配该规则，那么它将不再会进入其他规则
+     *
+     * @return
+     */
+    public WxMpMessageRouter end() {
+        this.routerBuilder.getRules().add(this);
+        return this.routerBuilder;
+    }
 
-  public void setAsync(boolean async) {
-    this.async = async;
-  }
+    /**
+     * 规则结束，但是消息还会进入其他规则
+     *
+     * @return
+     */
+    public WxMpMessageRouter next() {
+        this.reEnter = true;
+        return end();
+    }
 
-  public String getFromUser() {
-    return fromUser;
-  }
+    protected boolean test(WxMpXmlMessage wxMessage) {
+        boolean flag1 = (this.fromUser == null || wxMessage.getFromUserName() == null || this.fromUser.equals(wxMessage
+                .getFromUserName()));
+        boolean flag2 = (this.msgType == null || this.msgType.equals(wxMessage.getMsgType()));
+        boolean flag3 = (this.event == null || this.event.equals(wxMessage.getEvent()));
+        boolean flag4 = (this.eventKey == null || this.eventKey.equals(wxMessage.getEventKey()));
+        boolean flag5 = (this.content == null || this.content
+                .equals(wxMessage.getContent() == null ? null : wxMessage.getContent().trim()));
+        boolean flag6 = (this.rContent == null || Pattern
+                .matches(this.rContent, wxMessage.getContent() == null ? "" : wxMessage.getContent().trim()));
+        boolean flag7 = (this.matcher == null || this.matcher.match(wxMessage));
 
-  public void setFromUser(String fromUser) {
-    this.fromUser = fromUser;
-  }
+        return flag1 && flag2 && flag3 && flag4 && flag5 && flag6 && flag7;
 
-  public String getMsgType() {
-    return msgType;
-  }
 
-  public void setMsgType(String msgType) {
-    this.msgType = msgType;
-  }
+//    return
+//        (this.fromUser == null || this.fromUser.equals(wxMessage.getFromUserName()))
+//            &&
+//            (this.msgType == null || this.msgType.equals(wxMessage.getMsgType()))
+//            &&
+//            (this.event == null || this.event.equals(wxMessage.getEvent()))
+//            &&
+//            (this.eventKey == null || this.eventKey.equals(wxMessage.getEventKey()))
+//            &&
+//            (this.content == null || this.content
+//                .equals(wxMessage.getContent() == null ? null : wxMessage.getContent().trim()))
+//            &&
+//            (this.rContent == null || Pattern
+//                .matches(this.rContent, wxMessage.getContent() == null ? "" : wxMessage.getContent().trim()))
+//            &&
+//            (this.matcher == null || this.matcher.match(wxMessage))
+//        ;
+    }
 
-  public String getEvent() {
-    return event;
-  }
+    /**
+     * 处理微信推送过来的消息
+     *
+     * @param wxMessage
+     * @return true 代表继续执行别的router，false 代表停止执行别的router
+     */
+    protected WxMpXmlOutMessage service(WxMpXmlMessage wxMessage,
+                                        WxMpService wxMpService,
+                                        WxSessionManager sessionManager,
+                                        WxErrorExceptionHandler exceptionHandler) {
 
-  public void setEvent(String event) {
-    this.event = event;
-  }
+        try {
 
-  public String getEventKey() {
-    return eventKey;
-  }
+            Map<String, Object> context = new HashMap<String, Object>();
+            // 如果拦截器不通过
+            for (WxMpMessageInterceptor interceptor : this.interceptors) {
+                if (!interceptor.intercept(wxMessage, context, wxMpService, sessionManager)) {
+                    return null;
+                }
+            }
 
-  public void setEventKey(String eventKey) {
-    this.eventKey = eventKey;
-  }
+            // 交给handler处理
+            WxMpXmlOutMessage res = null;
+            for (WxMpMessageHandler handler : this.handlers) {
+                // 返回最后handler的结果
+                res = handler.handle(wxMessage, context, wxMpService, sessionManager);
+            }
+            return res;
+        } catch (WxErrorException e) {
+            exceptionHandler.handle(e);
+        }
+        return null;
 
-  public String getContent() {
-    return content;
-  }
+    }
 
-  public void setContent(String content) {
-    this.content = content;
-  }
+    public WxMpMessageRouter getRouterBuilder() {
+        return routerBuilder;
+    }
 
-  public String getrContent() {
-    return rContent;
-  }
+    public boolean isAsync() {
+        return async;
+    }
 
-  public void setrContent(String rContent) {
-    this.rContent = rContent;
-  }
+    public void setAsync(boolean async) {
+        this.async = async;
+    }
 
-  public WxMpMessageMatcher getMatcher() {
-    return matcher;
-  }
+    public String getFromUser() {
+        return fromUser;
+    }
 
-  public void setMatcher(WxMpMessageMatcher matcher) {
-    this.matcher = matcher;
-  }
+    public void setFromUser(String fromUser) {
+        this.fromUser = fromUser;
+    }
 
-  public boolean isReEnter() {
-    return reEnter;
-  }
+    public String getMsgType() {
+        return msgType;
+    }
 
-  public void setReEnter(boolean reEnter) {
-    this.reEnter = reEnter;
-  }
+    public void setMsgType(String msgType) {
+        this.msgType = msgType;
+    }
 
-  public List<WxMpMessageHandler> getHandlers() {
-    return handlers;
-  }
+    public String getEvent() {
+        return event;
+    }
 
-  public void setHandlers(List<WxMpMessageHandler> handlers) {
-    this.handlers = handlers;
-  }
+    public void setEvent(String event) {
+        this.event = event;
+    }
 
-  public List<WxMpMessageInterceptor> getInterceptors() {
-    return interceptors;
-  }
+    public String getEventKey() {
+        return eventKey;
+    }
 
-  public void setInterceptors(List<WxMpMessageInterceptor> interceptors) {
-    this.interceptors = interceptors;
-  }
+    public void setEventKey(String eventKey) {
+        this.eventKey = eventKey;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getrContent() {
+        return rContent;
+    }
+
+    public void setrContent(String rContent) {
+        this.rContent = rContent;
+    }
+
+    public WxMpMessageMatcher getMatcher() {
+        return matcher;
+    }
+
+    public void setMatcher(WxMpMessageMatcher matcher) {
+        this.matcher = matcher;
+    }
+
+    public boolean isReEnter() {
+        return reEnter;
+    }
+
+    public void setReEnter(boolean reEnter) {
+        this.reEnter = reEnter;
+    }
+
+    public List<WxMpMessageHandler> getHandlers() {
+        return handlers;
+    }
+
+    public void setHandlers(List<WxMpMessageHandler> handlers) {
+        this.handlers = handlers;
+    }
+
+    public List<WxMpMessageInterceptor> getInterceptors() {
+        return interceptors;
+    }
+
+    public void setInterceptors(List<WxMpMessageInterceptor> interceptors) {
+        this.interceptors = interceptors;
+    }
 }
