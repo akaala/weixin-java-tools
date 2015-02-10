@@ -20,6 +20,7 @@ public class WxMpDemoServer {
 
         Server server = new Server(8881);
 
+        // test change for upload to github.
         ServletHandler servletHandler = new ServletHandler();
         server.setHandler(servletHandler);
 
