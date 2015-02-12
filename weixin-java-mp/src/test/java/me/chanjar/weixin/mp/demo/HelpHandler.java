@@ -13,25 +13,18 @@ import me.chanjar.weixin.mp.bean.WxMpXmlMessage;
 import me.chanjar.weixin.mp.bean.WxMpXmlOutMessage;
 import me.chanjar.weixin.mp.bean.WxMpXmlOutTextMessage;
 
-public class JZHandler implements WxMpMessageHandler, WxMpMessageMatcher{
+public class HelpHandler implements WxMpMessageHandler, WxMpMessageMatcher {
 
-    private Pattern pattern = Pattern.compile("记账.*");
+    private Pattern pattern = Pattern.compile("[帮助,help,说明,Help,HELP].*");
 
     @Override
     public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage, Map<String, Object> context, WxMpService wxMpService, WxSessionManager sessionManager) throws WxErrorException {
         WxSession session = sessionManager.getSession(wxMessage.getFromUserName());
 
-//        if (session.getAttribute("jz") == null) //new action
-
-
-
-
-//        WxMpXmlOutTextMessage m
-//                = WxMpXmlOutMessage.TEXT().content("记账").fromUser(wxMessage.getToUserName())
-//                .toUser(wxMessage.getFromUserName()).build();
-//        System.out.println("build response msg: " + m.getContent());
-//        return m;
-        return  null;
+        WxMpXmlOutTextMessage m
+                = WxMpXmlOutMessage.TEXT().content(buildHelpIntro()).fromUser(wxMessage.getToUserName())
+                .toUser(wxMessage.getFromUserName()).build();
+        return m;
     }
 
     @Override
@@ -39,12 +32,11 @@ public class JZHandler implements WxMpMessageHandler, WxMpMessageMatcher{
         return pattern.matcher(message.getContent()).matches();
     }
 
+    private String buildHelpIntro() {
+        String s = "help introduce：... To Be Continued.";
 
-//    private String buildIntro() {
-//        WxMpXmlOutTextMessage m
-//                = WxMpXmlOutMessage.TEXT().content("记账").fromUser(wxMessage.getToUserName())
-//                .toUser(wxMessage.getFromUserName()).build();
-//    }
+        return s;
 
+    }
 
 }
