@@ -1,5 +1,6 @@
 package me.chanjar.weixin.mp.demo;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -20,32 +21,25 @@ public class JoinHandler implements WxMpMessageHandler, WxMpMessageMatcher {
     @Override
     public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage, Map<String, Object> context, WxMpService wxMpService, WxSessionManager sessionManager) throws WxErrorException {
         WxSession session = sessionManager.getSession(wxMessage.getFromUserName());
+        String returnMsg = null;
 
         Integer roomNum = getRoomNum(wxMessage.getContent().trim());
         Integer index = getIndex(wxMessage.getContent().trim());
 
-
+        session.setAttribute(SessionStatus.INIT, new Date().toString());
         if (null == roomNum) {
-            WxMpXmlOutTextMessage m
-                    = WxMpXmlOutMessage.TEXT().content(buildWrongRommMsg()).fromUser(wxMessage.getToUserName())
-                    .toUser(wxMessage.getFromUserName()).build();
-            return m;
-        } else if (validateRoomNum(roomNum)) { //输入的是存在的房间号
+            returnMsg = buildWrongRommMsg();
+
+        } else if (validateRoomNum(roomNum)  ) {  //输入的是存在的房间号
             if (null != session.getAttribute(SessionStatus.ROOM)
-                    && roomNum.equals(session.getAttribute(SessionStatus.ROOM))
+                    && roomNum.equals(session.getAttribute(SessionStatus.ROOM)) //检查是否是重复进这个房间
                     && null != session.getAttribute(SessionStatus.INDEX)) {
 
                 String gameInfo = GameInfoCache.getGameInfo(
                         (Integer) session.getAttribute(SessionStatus.ROOM),
                         (Integer) session.getAttribute(SessionStatus.INDEX));
-
-                WxMpXmlOutTextMessage m
-                        = WxMpXmlOutMessage.TEXT().content(
-                        buildAlreadyHasIndex((Integer) session.getAttribute(SessionStatus.INDEX), gameInfo)).
-                        fromUser(wxMessage
-                                .getToUserName())
-                        .toUser(wxMessage.getFromUserName()).build();
-                return m;
+                returnMsg =
+                        buildAlreadyHasIndex((Integer) session.getAttribute(SessionStatus.INDEX), gameInfo);
             } else {
                 if (null == index) { //错误的index
                     index = GameInfoCache.nextAvailableIndex(roomNum);
@@ -53,28 +47,21 @@ public class JoinHandler implements WxMpMessageHandler, WxMpMessageMatcher {
                 if (null != index) {
                     String gameInfo = GameInfoCache.getGameInfo(roomNum, index);
 
-                    WxMpXmlOutTextMessage m
-                            = WxMpXmlOutMessage.TEXT().content(buildGameInfo(index, gameInfo)).fromUser(wxMessage
-                            .getToUserName())
-                            .toUser(wxMessage.getFromUserName()).build();
-                    session.setAttribute(SessionStatus.ROOM, roomNum);
-                    session.setAttribute(SessionStatus.INDEX, index);
-                    return m;
+                    returnMsg =gameInfo;
+
                 } else { // 没有足够的位置了
-                    WxMpXmlOutTextMessage m
-                            = WxMpXmlOutMessage.TEXT().content(buildNoEnoughIndex(roomNum)).fromUser(wxMessage
-                            .getToUserName())
-                            .toUser(wxMessage.getFromUserName()).build();
-                    return m;
+                    returnMsg =buildNoEnoughIndex(roomNum);
                 }
             }
         } else { //输入了无效的房间
-            WxMpXmlOutTextMessage m
-                    = WxMpXmlOutMessage.TEXT().content(buildWrongRommMsg()).fromUser(wxMessage
-                    .getToUserName())
-                    .toUser(wxMessage.getFromUserName()).build();
-            return m;
+            returnMsg =buildWrongRommMsg();
         }
+
+
+        WxMpXmlOutTextMessage m
+                = WxMpXmlOutMessage.TEXT().content(returnMsg).fromUser(wxMessage.getToUserName())
+                .toUser(wxMessage.getFromUserName()).build();
+        return m;
     }
 
     private boolean validateRoomNum(Integer roomNum) {
@@ -83,19 +70,11 @@ public class JoinHandler implements WxMpMessageHandler, WxMpMessageMatcher {
 
     private String buildNoEnoughIndex(Integer roomNum) {
         return String.format("房间[%d]位置已满。", roomNum);
-
     }
 
     private String buildAlreadyHasIndex(Integer index, String gameInfo) {
-        return String.format("你已经加入了该房间！\n" +
-                "你是%d号， 可以看到其他人的信息为：\n" +
-                "%s", index, gameInfo);
+        return String.format("你已经加入了该房间！\n%s", gameInfo);
 
-    }
-
-    private String buildGameInfo(int index, String gameInfo) {
-        return String.format("你是%d号， 可以看到其他人的信息为：\n" +
-                "%s", index, gameInfo);
     }
 
     private String buildWrongRommMsg() {

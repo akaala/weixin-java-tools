@@ -81,7 +81,7 @@ public class StandardSessionManager implements WxSessionManager, InternalSession
    * The default maximum inactive interval for Sessions created by
    * this Manager.
    */
-  protected int maxInactiveInterval = 30 * 60;
+  protected int maxInactiveInterval = 20 * 60;
 
   // Number of sessions created by this manager
   protected long sessionCounter=0;

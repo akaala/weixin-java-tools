@@ -1,5 +1,6 @@
 package me.chanjar.weixin.mp.demo;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -22,6 +23,8 @@ public class CreatHandler implements WxMpMessageHandler, WxMpMessageMatcher {
         WxSession session = sessionManager.getSession(wxMessage.getFromUserName());
 
         Integer playerNum = getPlayerNum(wxMessage.getContent().trim());
+
+        session.setAttribute(SessionStatus.INIT, new Date().toString()); // write session
 
         if (null == playerNum) {
             WxMpXmlOutTextMessage m
@@ -54,9 +57,9 @@ public class CreatHandler implements WxMpMessageHandler, WxMpMessageMatcher {
 
     private String buildCreatSuccessMsg(int value, int roomNum) {
         return String.format("新建%d人房间[%d]成功。\n" +
-                "你的朋友可输入\"加入%d\"或\n" +
-                "\"加入,序号\"来一起玩。\n" +
-                "你是1号，可看到其他人的词为：\n%s", value, roomNum, roomNum, GameInfoCache.getGameInfo(roomNum, 1));
+                "你的朋友可输入\"加入%d\"\n或" +
+                "\"加入%d,[他期望的序号]\"来一起玩。\n" +
+                "%s", value, roomNum, roomNum, roomNum, GameInfoCache.getGameInfo(roomNum, 1));
     }
 
 

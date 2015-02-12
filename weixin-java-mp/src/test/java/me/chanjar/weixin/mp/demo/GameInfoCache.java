@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class GameInfoCache {
@@ -80,14 +79,16 @@ public class GameInfoCache {
 
     private static GameInfo buildRandomGameInfo(int playerNum) {
         TreeMap<Integer, String> wordMap = new TreeMap<Integer, String>();
-        List<String> words = filterWordsMap(playerNum);
+        ArrayList<String> words = new ArrayList<String>(filterWordsMap(playerNum));
 
-        if (null != words) {
+        if (null != words && words.size()>1) {
+            String scenario = words.remove(0);
+
             Collections.shuffle(words);
             for (int i = 1; i <= playerNum; i++) {
                 wordMap.put(i, words.get(i - 1));
             }
-            return new GameInfo(playerNum, wordMap);
+            return new GameInfo(playerNum, scenario, wordMap);
         } else {
             return null;
         }
@@ -97,7 +98,7 @@ public class GameInfoCache {
         Map<List<String>, Integer> newWordList = Maps.filterValues(wordsList, new Predicate<Integer>() {
             @Override
             public boolean apply(Integer integer) {
-                return integer>=playerNum;
+                return integer>=playerNum + 1;
             }
         });
 
@@ -112,7 +113,7 @@ public class GameInfoCache {
 
     public static String getGameInfo(Integer roomNumber, Integer index) {
         if (gameMap.containsKey(roomNumber)) {
-            String info = gameMap.get(roomNumber).getOtherPlayerInfo(index);
+            String info = gameMap.get(roomNumber).getGameInfo(index);
             if (null != info) {
                 return info;
             } else {
@@ -139,11 +140,12 @@ public class GameInfoCache {
     private static class GameInfo {
         int playerNum;
         Map<Integer, String> wordMap;
+        String scenario;
 
-        protected GameInfo(int playerNum, TreeMap<Integer, String> map) {
+        protected GameInfo(int playerNum, String scenario, TreeMap<Integer/*player index*/, String/*word*/> map) {
             this.playerNum = playerNum;
             this.wordMap = map;
-
+            this.scenario = scenario;
             for(int i = 2; i <= playerNum; i++) {
                 availableIndexes.add(i);
             }
@@ -151,9 +153,16 @@ public class GameInfoCache {
 
         List<Integer> availableIndexes = new ArrayList<Integer>();
 
-        public String getOtherPlayerInfo(int index) {
+        public String getGameInfo(int index) {
+            // 1 你是%d号
+            // 2 场景信息
+            // 3 其他player信息
             if (wordMap.size() > 0 && wordMap.containsKey(index)) {
                 StringBuilder sb= new StringBuilder();
+                sb.append("============\n");
+                sb.append("你是").append(index).append("号，");
+                sb.append("模拟的场景为：").append(scenario).append("\n");
+                sb.append("其他人的词语是：\n");
                 for (Integer i: wordMap.keySet()) {
                     if (i != index) {
                         sb.append(String.format("============\n" +

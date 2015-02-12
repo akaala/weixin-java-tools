@@ -1,5 +1,6 @@
 package me.chanjar.weixin.mp.demo;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -20,6 +21,7 @@ public class HelpHandler implements WxMpMessageHandler, WxMpMessageMatcher {
     @Override
     public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage, Map<String, Object> context, WxMpService wxMpService, WxSessionManager sessionManager) throws WxErrorException {
         WxSession session = sessionManager.getSession(wxMessage.getFromUserName());
+        session.setAttribute(SessionStatus.INIT, null);
 
         WxMpXmlOutTextMessage m
                 = WxMpXmlOutMessage.TEXT().content(buildHelpIntro()).fromUser(wxMessage.getToUserName())
@@ -33,7 +35,10 @@ public class HelpHandler implements WxMpMessageHandler, WxMpMessageMatcher {
     }
 
     private String buildHelpIntro() {
-        String s = "help introduce：... To Be Continued.";
+        String s = "游戏说明：\n" +
+                "在设定的场景中，每个人分配到一个词。自己看不到自己的词，但是能够看到其他人的词。" +
+                "游戏目的即是诱使对方说出他的词语或作出相应的动作，对方即失败接受惩罚。\n" +
+                "规则：必须正面回答问题，不能故意回避。";
 
         return s;
 
