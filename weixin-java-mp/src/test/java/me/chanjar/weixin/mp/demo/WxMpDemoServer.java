@@ -18,7 +18,7 @@ public class WxMpDemoServer {
     public static void main(String[] args) throws Exception {
         initWeixin();
 
-        Server server = new Server(8881);
+        Server server = new Server(80);
 
         // test change for upload to github.
         ServletHandler servletHandler = new ServletHandler();
