@@ -2,6 +2,7 @@ package me.chanjar.weixin.mp.demo;
 
 import java.io.InputStream;
 
+import me.chanjar.weixin.mp.demo.jizhang.JZInitHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -47,22 +48,24 @@ public class WxMpDemoServer {
         WxMpMessageHandler imageHandler = new DemoImageHandler();
         WxMpMessageHandler oauth2handler = new DemoOAuth2Handler();
         DemoGuessNumberHandler guessNumberHandler = new DemoGuessNumberHandler();
-        InitHandler initHandler = new InitHandler();
         CreatHandler creatHandler = new CreatHandler();
         JoinHandler joinHandler = new JoinHandler();
         ExitHandler exitHandler = new ExitHandler();
         HelpHandler helpHandler = new HelpHandler();
+
+        JZInitHandler jzInitHandler = new JZInitHandler();
 
         wxMpMessageRouter = new WxMpMessageRouter(wxMpService);
         wxMpMessageRouter
                 .rule().handler(logHandler).next()
 //                .rule().msgType(WxConsts.XML_MSG_TEXT).matcher(guessNumberHandler).handler(guessNumberHandler).end()
                 // async(true) 会导致收不到
-                .rule().async(false).matcher(initHandler).handler(initHandler).next()
                 .rule().async(false).matcher(creatHandler).handler(creatHandler).next()
                 .rule().async(false).matcher(joinHandler).handler(joinHandler).next()
                 .rule().async(false).matcher(exitHandler).handler(exitHandler).next()
                 .rule().async(false).matcher(helpHandler).handler(helpHandler).next()
+
+                .rule().async(false).matcher(jzInitHandler).handler(jzInitHandler).next()
 //                .rule().async(false).content("测试").handler(textHandler).next()
 //                .rule().async(false).rContent(".*").handler(textHandler).next()
 //                .rule().async(false).rContent("记账.*").handler(jzHandler).next()
