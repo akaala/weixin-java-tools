@@ -47,15 +47,23 @@ public class WxMpDemoServer {
         WxMpMessageHandler imageHandler = new DemoImageHandler();
         WxMpMessageHandler oauth2handler = new DemoOAuth2Handler();
         DemoGuessNumberHandler guessNumberHandler = new DemoGuessNumberHandler();
-        JZHandler jzHandler = new JZHandler();
+        InitHandler initHandler = new InitHandler();
+        CreatHandler creatHandler = new CreatHandler();
+        JoinHandler joinHandler = new JoinHandler();
+        ExitHandler exitHandler = new ExitHandler();
+        HelpHandler helpHandler = new HelpHandler();
 
         wxMpMessageRouter = new WxMpMessageRouter(wxMpService);
         wxMpMessageRouter
                 .rule().handler(logHandler).next()
-                .rule().msgType(WxConsts.XML_MSG_TEXT).matcher(guessNumberHandler).handler(guessNumberHandler).end()
+//                .rule().msgType(WxConsts.XML_MSG_TEXT).matcher(guessNumberHandler).handler(guessNumberHandler).end()
                 // async(true) 会导致收不到
-//                .rule().async(false).matcher().handler(jzHandler).next()
-                .rule().async(false).content("测试").handler(textHandler).next()
+                .rule().async(false).matcher(initHandler).handler(initHandler).next()
+                .rule().async(false).matcher(creatHandler).handler(creatHandler).next()
+                .rule().async(false).matcher(joinHandler).handler(joinHandler).next()
+                .rule().async(false).matcher(exitHandler).handler(exitHandler).next()
+                .rule().async(false).matcher(helpHandler).handler(helpHandler).next()
+//                .rule().async(false).content("测试").handler(textHandler).next()
 //                .rule().async(false).rContent(".*").handler(textHandler).next()
 //                .rule().async(false).rContent("记账.*").handler(jzHandler).next()
                 .rule().async(false).content("图片").handler(imageHandler).end()
